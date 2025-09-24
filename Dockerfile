@@ -1,18 +1,20 @@
 FROM python:3.11-slim
 
-# Install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-RUN pip install --upgrade pip
-RUN pip install fastapi uvicorn yt-dlp
+WORKDIR /app
 
-# Copy app code
+COPY requirements.txt .
+RUN python -m pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . .
 
-# Expose the port Render expects
-EXPOSE 10000
+ENV PORT=8000
 
-# Run FastAPI
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "10000"]
+CMD ["sh","-c","uvicorn server:app --host 0.0.0.0 --port ${PORT:-8000}"]
+
+
 
